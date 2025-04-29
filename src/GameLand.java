@@ -19,7 +19,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.*;
-import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -45,7 +44,7 @@ public class GameLand implements Runnable, KeyListener {
 
     //Declare the objects and arrays used in the program below
     public Hero astro;
-    public Meteor[] rocks;
+    public Meteor[] meteors;
 
     public Image astroPic;
     public Image backgroundPic1, backgroundPic2;
@@ -59,6 +58,9 @@ public class GameLand implements Runnable, KeyListener {
     public boolean gameOver;
 
     public int score;
+    public int maxSpeed=5;
+    public double ddx = .15;
+    public double ddy = .15;
 
     //declare time variables
     public long startTime;
@@ -73,6 +75,7 @@ public class GameLand implements Runnable, KeyListener {
 
     // Constructor Method
     public GameLand() {
+        startTime=System.currentTimeMillis();
         setUpGraphics(); //this calls the setUpGraphics() method
 /** In order to avoid having our game start immeadiatly upon pressing run,
  * take out the object constructors, and put them in the relevant
@@ -95,7 +98,7 @@ public class GameLand implements Runnable, KeyListener {
             startScreen1=false;
             level1=true;
             startLevel1();
-           // System.out.println("level 1 has started");
+            // System.out.println("level 1 has started");
         }
         if(level1 && score>14){ // transition from level 1 to pause screen
             level1=false;
@@ -105,8 +108,8 @@ public class GameLand implements Runnable, KeyListener {
             startScreen2=false;
             level2=true;
             startLevel2();
-           // System.out.println("level 2 has started");
-       }
+            // System.out.println("level 2 has started");
+        }
         if(gameOver){ //restart the game transition from game over to level 1
             gameOver=false;
             level1=true;
@@ -115,16 +118,16 @@ public class GameLand implements Runnable, KeyListener {
     }
     public void startLevel1(){
         /**create (construct) the objects needed for level 1 below*/
-        astro = new Hero(400, 500, 2, 0);
+        astro = new Hero(400, 500, 0, 0);
         System.out.println("i made astro");
         //construct my array of meteors
-        rocks = new Meteor[28];
-        for (int i = 0; i < rocks.length; i = i + 1) {
+        meteors = new Meteor[28];
+        for (int i = 0; i < meteors.length; i = i + 1) {
             int randX = (int) (Math.random() * 1000);
             int randY = (int) (Math.random() * 700);
             int randDx = (int) (Math.random()*5+1);
             int randDy = (int) (Math.random()*5+1);
-            rocks[i] = new Meteor(randX, randY, randDx, randDy);
+            meteors[i] = new Meteor(randX, randY, randDx, randDy);
         }
         System.out.println("i made my rocks");
         //reset start time
@@ -135,15 +138,15 @@ public class GameLand implements Runnable, KeyListener {
     public void startLevel2(){
         /** create (construct) the objects needed for level 2 below */
         //construct new array of rocks by writing over the old array
-        rocks = new Meteor[40];
-        for (int i = 0; i < rocks.length; i = i + 1) {
+        meteors = new Meteor[40];
+        for (int i = 0; i < meteors.length; i = i + 1) {
             int randX = (int) (Math.random() * 1000);
             int randY = (int) (Math.random() * 700);
             int randDx= (int) (Math.random() * 6)-3;
             int randDy= (int) (Math.random() * 6)-3;
-            rocks[i] = new Meteor(randX, randY, randDx, randDy);
-            rocks[i].height=60;
-            rocks[i].width=60;
+            meteors[i] = new Meteor(randX, randY, randDx, randDy);
+            meteors[i].height=60;
+            meteors[i].width=60;
         }
         System.out.println("i made my BIG rocks");
         //reset start time
@@ -155,6 +158,7 @@ public class GameLand implements Runnable, KeyListener {
         //get the current time
         currentTime = System.currentTimeMillis();
         //calculate the elapsed time, convert it to seconds and cast as an int
+      // elapsedTime=30-((int)((currentTime-startTime)*.001)); // *.001 to convert to seconds
         elapsedTime=(int)((currentTime-startTime)*.001); // *.001 to convert to seconds
 
     }
@@ -163,17 +167,17 @@ public class GameLand implements Runnable, KeyListener {
         /**Avoid Null pointer exceptions*/
         if(astro!=null){
             astro.move();}
-        if(rocks!=null) {
-            for (int i = 0; i < rocks.length; i = i + 1) {
-                rocks[i].bouncingMove();
+        if(meteors !=null) {
+            for (int i = 0; i < meteors.length; i = i + 1) {
+                meteors[i].bouncingMove();
             }
         }
     }
     public void collisions(){
-        if(astro!=null && rocks!=null) {
-            for(int i=0;i< rocks.length; i=i+1) {
-                if (rocks[i].rec.intersects(astro.rec)) {
-                    rocks[i].killRock();
+        if(astro!=null && meteors !=null) {
+            for(int i = 0; i< meteors.length; i=i+1) {
+                if (meteors[i].rec.intersects(astro.rec)) {
+                    meteors[i].killRock();
                     score=score+1;
                 }
             }
@@ -189,7 +193,34 @@ public class GameLand implements Runnable, KeyListener {
         }
 
     }
+    public void accelerate() {
+        if (astro != null) {
+            if (astro.leftPressed) {
+                if (astro.dx > -maxSpeed) {
+                    astro.dx -= ddx;
+                    System.out.println("hi" + astro.dx);
+                }
+            } else if (astro.rightPressed) {
+                if (astro.dx < maxSpeed) {
+                    astro.dx += ddx;
+                }
+            } else {
+                astro.dx *= .98;
+            }
+            if (astro.upPressed) {
+                if (astro.dy > -maxSpeed) {
+                    astro.dy -= ddy;
+                }
+            } else if (astro.downPressed) {
+                if (astro.dy < maxSpeed) {
+                    astro.dy += ddy;
+                }
+            } else {
+                astro.dy *= .98;
+            }
 
+        }
+    }
 
 
     // main thread
@@ -200,6 +231,7 @@ public class GameLand implements Runnable, KeyListener {
         while (true) {
             timer();
             moveThings();  //move all the game objects
+            accelerate();
             collisions();
             render();  // paint the graphics
             pause(20); // sleep for 20 ms
@@ -209,63 +241,67 @@ public class GameLand implements Runnable, KeyListener {
     //paints things on the screen using bufferStrategy
     private void render() {
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
-       g.clearRect(0, 0, WIDTH, HEIGHT);
+        g.clearRect(0, 0, WIDTH, HEIGHT);
 
-       /** USE IF CONDITIONS AROUND WHAT IMAGES TO RENDER */
-       if (startScreen1){
-           //include start screen here
-           g.drawString("press space bar to begin", 400, 300);
-       }
+        /** USE IF CONDITIONS AROUND WHAT IMAGES TO RENDER */
+        if (startScreen1==true){
+            //include start screen here
+            g.drawString("press space bar to begin", 400, 300);
+        }
 
-       if(level1) {
-           /**draw background and images and words for level 1
-            * in order to avoid Null Point errors, you need to include
-            * if (objects!= null) conditionals around objects */
+        if(level1) {
+            /**draw background and images and words for level 1
+             * in order to avoid Null Point errors, you need to include
+             * if (objects!= null) conditionals around objects */
 
-           g.drawImage(backgroundPic1, 0, 0, WIDTH, HEIGHT, null);
+            g.drawImage(backgroundPic1, 0, 0, WIDTH, HEIGHT, null);
             g.setColor(Color.WHITE);
-           g.drawString("score: "+ score, 100, 60);
-           g.drawString("time: " + elapsedTime, 900, 60);
-           //draw the image of your objects below:
-           if (astro != null) {
-               g.drawImage(astroPic, astro.xpos, astro.ypos, astro.width, astro.height, null);
-           }
-           if (rocks!=null) {
-               for (int i = 0; i < rocks.length; i = i + 1) {
-                   if(rocks[i].isAlive==true) {
-                       g.drawImage(rockPic, rocks[i].xpos, rocks[i].ypos, rocks[i].width, rocks[i].height, null);
-                   }
-               }
-           }
-       }
-       if(startScreen2){
-           //draw image for pause screen between levels
-           g.drawString("press space bar for level 2", 400, 350);
-       }
-       if (level2){
-           /**draw new background and new objects if applicable
-            * again, include if( objects != null) conditionals */
-           g.drawImage(backgroundPic2, 0, 0, WIDTH, HEIGHT, null);
-           g.setColor(Color.WHITE);
-           g.drawString("score: "+ score, 100, 60);
-           g.drawString("time: " + elapsedTime, 900, 60);
-           //draw the image of your objects below:
-           if (astro != null) {
-               g.drawImage(astroPic, astro.xpos, astro.ypos, astro.width, astro.height, null);
-           }
-           if (rocks!=null) {
-               for (int i = 0; i < rocks.length; i = i + 1) {
-                   g.drawImage(rockPic, rocks[i].xpos, rocks[i].ypos, rocks[i].width, rocks[i].height, null);
-               }
-           }
-       }
-       if(gameOver){
-           //draw cool game over screen image here
-           g.drawString("the game is over", 400,350);
-           g.drawString("press space bar to restart", 400,400);
-       }
+            g.drawString("score: "+ score, 100, 60);
+            g.drawString("time: " + elapsedTime, 900, 60);
+            //draw a rectangle (for example a health bar)
+            g.drawRect(astro.xpos,astro.ypos, astro.width, astro.height);
 
-       //these two lines have to stay at the bottom of the render!
+            //draw the image of your objects below:
+            if (astro != null) {
+                g.drawImage(astroPic, astro.xpos, astro.ypos, astro.width, astro.height, null);
+            }
+
+            if (meteors !=null) {
+                for (int i = 0; i < meteors.length; i = i + 1) {
+                    if(meteors[i].isAlive==true) {
+                        g.drawImage(rockPic, meteors[i].xpos, meteors[i].ypos, meteors[i].width, meteors[i].height, null);
+                    }
+                }
+            }
+        }
+        if(startScreen2){
+            //draw image for pause screen between levels
+            g.drawString("press space bar for level 2", 400, 350);
+        }
+        if (level2){
+            /**draw new background and new objects if applicable
+             * again, include if( objects != null) conditionals */
+            g.drawImage(backgroundPic2, 0, 0, WIDTH, HEIGHT, null);
+            g.setColor(Color.WHITE);
+            g.drawString("score: "+ score, 100, 60);
+            g.drawString("time: " + elapsedTime, 900, 60);
+            //draw the image of your objects below:
+            if (astro != null) {
+                g.drawImage(astroPic, astro.xpos, astro.ypos, astro.width, astro.height, null);
+            }
+            if (meteors !=null) {
+                for (int i = 0; i < meteors.length; i = i + 1) {
+                    g.drawImage(rockPic, meteors[i].xpos, meteors[i].ypos, meteors[i].width, meteors[i].height, null);
+                }
+            }
+        }
+        if(gameOver){
+            //draw cool game over screen image here
+            g.drawString("the game is over", 400,350);
+            g.drawString("press space bar to restart", 400,400);
+        }
+
+        //these two lines have to stay at the bottom of the render!
         //dispose the images each time(this allows for the illusion of movement).
         g.dispose();
         bufferStrategy.show();
@@ -343,12 +379,12 @@ public class GameLand implements Runnable, KeyListener {
     public void keyReleased(KeyEvent e) {
         char key =e.getKeyChar();
         int keyCode=e.getKeyCode();
-       /**CONNECT SPACE BAR KEY TO OUR LEVEL BOOLEAN TRANSITIONS */
+        /**CONNECT SPACE BAR KEY TO OUR LEVEL BOOLEAN TRANSITIONS */
         if(keyCode==32){ //32 is space bar
-          runCorrectLevel();
+            runCorrectLevel();
         }
 
-       //USER CONTROL BELOW
+        //USER CONTROL BELOW
         if(keyCode==68){// d is 68 // right movement
             astro.rightPressed=false;
         }

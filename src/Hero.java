@@ -5,8 +5,8 @@ public class Hero {
     public String name;                //holds the name of the hero
     public int xpos;                //the x position
     public int ypos;                //the y position
-    public int dx;                    //the speed of the hero in the x direction
-    public int dy;                    //the speed of the hero in the y direction
+    public double dx;                    //the speed of the hero in the x direction
+    public double dy;                    //the speed of the hero in the y direction
     public int width;
     public int height;
     public boolean isAlive;            //a boolean to denote if the hero is alive or dead.
@@ -40,24 +40,24 @@ public class Hero {
         isAlive=true;
     }
     public void move(){//this is the user control move method
-        //horizontal
-        if(rightPressed==true){
-            dx=2;
-        }else if(leftPressed==true){
-            dx=-2;
-        } else {
-            dx=0;
-        }
-        //vertical
-        if(downPressed==true){
-            dy=2;
-        }else if(upPressed==true){
-            dy=-2;
-        } else {
-            dy=0;
-        }
-        xpos=xpos+ dx;
-        ypos= ypos+ dy;
+//        //horizontal
+//        if(rightPressed==true){
+//            dx=2;
+//        }else if(leftPressed==true){
+//            dx=-2;
+//        } else {
+//            dx=0;
+//        }
+//        //vertical
+//        if(downPressed==true){
+//            dy=2;
+//        }else if(upPressed==true){
+//            dy=-2;
+//        } else {
+//            dy=0;
+//        }
+        xpos=(int)(xpos+ dx);
+        ypos= (int)(ypos+ dy);
         rec = new Rectangle(xpos, ypos, width,height);
 
     }
@@ -76,8 +76,8 @@ public class Hero {
 
         //the two lines of code below actually update the position
         //this is what makes the object move.
-        xpos=xpos+ dx;
-        ypos= ypos+ dy;
+        xpos=(int)(xpos+ dx);
+        ypos= (int)(ypos+ dy);
         rec = new Rectangle(xpos, ypos, width,height);
 
     }
@@ -97,8 +97,8 @@ public class Hero {
         }
         //the two lines of code below actually update the position
         //this is what makes the object move.
-        xpos=xpos+ dx;
-        ypos= ypos+ dy;
+        xpos=(int)(xpos+ dx);
+        ypos= (int)(ypos+ dy);
         //this updates the rectangle location
         rec = new Rectangle(xpos, ypos, width,height);
 
